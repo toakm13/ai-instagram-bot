@@ -59,14 +59,33 @@ def create_post_image(text, filename):
     current = ""
 
     for word in words:
-        test = current + " " + word
-        w, _ = draw.textsize(test, font=font)
-        if w <= max_width:
+        test = current + " " + word if current else word
+        bbox = draw.textbbox((0, 0), test, font=font)
+        width = bbox[2] - bbox[0]
+
+        if width <= max_width:
             current = test
         else:
             lines.append(current)
             current = word
-    lines.append(current)
+
+    if current:
+        lines.append(current)
+
+    y = 300
+    for line in lines:
+        bbox = draw.textbbox((0, 0), line, font=font)
+        w = bbox[2] - bbox[0]
+        h = bbox[3] - bbox[1]
+
+        draw.text(((1080 - w) / 2, y), line, fill="white", font=font)
+        y += h + 14
+
+    # watermark
+    draw.text((30, 1020), "@yourpage", fill="gray", font=font)
+
+    img.save(filename)
+    print(f"🖼 Image created: {filename}")
 
     y = 300
     for line in lines:
