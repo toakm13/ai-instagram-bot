@@ -1,119 +1,145 @@
 import yfinance as yf
-from datetime import datetime
+import random
+from datetime import date
 from PIL import Image, ImageDraw, ImageFont
 
 
-# ----------------------------
-# MARKET DATA
-# ----------------------------
+# -----------------------------
+# FETCH MARKET DATA (NIFTY 50)
+# -----------------------------
 def fetch_market_data():
-    nifty = yf.Ticker("^NSEI")
-    data = nifty.history(period="5d")
+    ticker = yf.Ticker("^NSEI")
+    data = ticker.history(period="5d")
 
     if len(data) < 2:
         return None
 
-    close = round(data["Close"].iloc[-1], 2)
-    prev = round(data["Close"].iloc[-2], 2)
-    change = round(close - prev, 2)
-    pct = round((change / prev) * 100, 2)
+    close_today = round(data["Close"].iloc[-1], 2)
+    close_yesterday = round(data["Close"].iloc[-2], 2)
+    change = round(close_today - close_yesterday, 2)
+    pct_change = round((change / close_yesterday) * 100, 2)
 
-    snapshot = (
-        "📊 Market Snapshot\n\n"
-        f"NIFTY 50 closed {'up' if change > 0 else 'down'} today.\n"
-        f"Close: {close} | Change: {change} ({pct}%)\n\n"
-        "Markets continue to react to global and domestic cues.\n"
-        "This is not investment advice."
+    return close_today, change, pct_change
+
+
+# -----------------------------
+# GENERATE TEXT CONTENT
+# -----------------------------
+def generate_market_text(close, change, pct):
+    direction = "up" if change >= 0 else "down"
+
+    return (
+        f"📊 Market Snapshot\n\n"
+        f"NIFTY 50 closed {direction} today.\n"
+        f"Close: {close}\n"
+        f"Change: {change} ({pct}%)\n\n"
+        f"Markets continue to react to global and domestic cues.\n"
+        f"This is not investment advice."
     )
 
-    return snapshot
 
-
-# ----------------------------
-# MEME TEXT
-# ----------------------------
 def generate_meme_text():
     memes = [
-        "Investor routine: check chart → sigh → repeat 📉📈",
-        "Market opens. Hope opens. Market closes. Hope closes.",
-        "Long term investor since yesterday.",
-        "Portfolio red but conviction green.",
-        "Buy high. Sell low. Regret forever."
+        "Investor routine:\ncheck chart → sigh → repeat 😮‍💨📉",
+        "Market falls 1%\nMe: long term bro 😅",
+        "Portfolio red\nConfidence green 💀",
     ]
-    return "😂 Meme Text\n\n" + memes[datetime.now().day % len(memes)]
+    return random.choice(memes)
 
 
-# ----------------------------
-# IMAGE CREATION (SAFE)
-# ----------------------------
+def generate_market_caption():
+    captions = [
+        "Markets ended mixed today 📊\nVolatility stays.\n\nNot investment advice.",
+        "Choppy session in Dalal Street today.\nPatience matters 🧠\n\nNot investment advice.",
+        "Red. Green. Repeat 🔁\nThat’s markets.\n\nNot investment advice.",
+    ]
+    return random.choice(captions)
+
+
+def generate_meme_caption():
+    captions = [
+        "Every investor ever 😅📉",
+        "If pain had a chart 💀",
+        "Market psychology 101 📊",
+    ]
+    return random.choice(captions)
+
+
+def generate_hashtags():
+    return (
+        "#StockMarket #IndianMarkets #Nifty50 #TradingLife "
+        "#Investing #FinanceMemes #MarketNews "
+        "#DalalStreet #Wealth"
+    )
+
+
+# -----------------------------
+# CREATE IMAGE POST
+# -----------------------------
 def create_post_image(text, filename):
-    img = Image.new("RGB", (1080, 1080), (18, 18, 18))
+    img = Image.new("RGB", (1080, 1080), color=(15, 15, 15))
     draw = ImageDraw.Draw(img)
 
     try:
-        font = ImageFont.truetype("arial.ttf", 44)
+        font = ImageFont.truetype("DejaVuSans-Bold.ttf", 48)
+        small_font = ImageFont.truetype("DejaVuSans.ttf", 28)
     except:
         font = ImageFont.load_default()
+        small_font = ImageFont.load_default()
 
-    max_width = 900
-    words = text.split()
-    lines = []
-    current = ""
-
-    for word in words:
-        test = current + " " + word if current else word
-        bbox = draw.textbbox((0, 0), test, font=font)
-        width = bbox[2] - bbox[0]
-
-        if width <= max_width:
-            current = test
-        else:
-            lines.append(current)
-            current = word
-
-    if current:
-        lines.append(current)
-
-    y = 250
-    for line in lines:
+    y = 120
+    for line in text.split("\n"):
         bbox = draw.textbbox((0, 0), line, font=font)
         w = bbox[2] - bbox[0]
-        h = bbox[3] - bbox[1]
-
         draw.text(((1080 - w) / 2, y), line, fill="white", font=font)
-        y += h + 14
+        y += 70
 
-    draw.text((30, 1030), "@yourpage", fill="gray", font=font)
+    # Watermark
+    draw.text((30, 1020), "@yourpage", fill="gray", font=small_font)
 
     img.save(filename)
-    print(f"🖼 Image created: {filename}")
+    print(f"🖼️ Image created: {filename}")
 
 
-# ----------------------------
+# -----------------------------
 # MAIN ENGINE
-# ----------------------------
+# -----------------------------
 def main():
-    print("🚀 Bot engine running\n")
+    print("🚀 Bot engine running")
 
-    market_text = fetch_market_data()
-    meme_text = generate_meme_text()
-
-    if not market_text:
+    market_data = fetch_market_data()
+    if not market_data:
         print("❌ Market data unavailable")
         return
 
+    close, change, pct = market_data
+
+    market_text = generate_market_text(close, change, pct)
+    meme_text = generate_meme_text()
+
+    print("\n📊 Market Snapshot")
     print(market_text)
-    print()
+
+    print("\n😂 Meme Text")
     print(meme_text)
 
-    today = datetime.now().strftime("%Y-%m-%d")
-    image_text = market_text + "\n\n" + meme_text
-
+    today = date.today().isoformat()
+    image_text = market_text + "\n\n😂 " + meme_text
     create_post_image(image_text, f"post_{today}.png")
 
+    print("\n📌 Captions")
+    print("Market Caption:")
+    print(generate_market_caption())
 
-# ----------------------------
-# ENTRY POINT
-# ----------------------------
+    print("\nMeme Caption:")
+    print(generate_meme_caption())
+
+    print("\nHashtags:")
+    print(generate_hashtags())
+
+
+# -----------------------------
+# RUN
+# -----------------------------
 if __name__ == "__main__":
     main()
