@@ -2,54 +2,56 @@ import yfinance as yf
 from datetime import datetime
 from PIL import Image, ImageDraw, ImageFont
 
-# -------------------------
-# FETCH MARKET DATA
-# -------------------------
-def fetch_market_data():
-    ticker = yf.Ticker("^NSEI")  # NIFTY 50
-    data = ticker.history(period="5d")
 
-    if data.empty or len(data) < 2:
+# ----------------------------
+# MARKET DATA
+# ----------------------------
+def fetch_market_data():
+    nifty = yf.Ticker("^NSEI")
+    data = nifty.history(period="5d")
+
+    if len(data) < 2:
         return None
 
-    last_close = round(data["Close"].iloc[-1], 2)
-    prev_close = round(data["Close"].iloc[-2], 2)
-    change = round(last_close - prev_close, 2)
-    pct = round((change / prev_close) * 100, 2)
+    close = round(data["Close"].iloc[-1], 2)
+    prev = round(data["Close"].iloc[-2], 2)
+    change = round(close - prev, 2)
+    pct = round((change / prev) * 100, 2)
 
-    return {
-        "index": "NIFTY 50",
-        "last": last_close,
-        "change": change,
-        "pct": pct
-    }
-
-# -------------------------
-# GENERATE TEXT CONTENT
-# -------------------------
-def generate_captions(market):
-    direction = "up" if market["change"] > 0 else "down"
-
-    market_caption = (
-        f"{market['index']} closed {direction} today.\n"
-        f"Close: {market['last']} | Change: {market['change']} ({market['pct']}%)\n\n"
+    snapshot = (
+        "📊 Market Snapshot\n\n"
+        f"NIFTY 50 closed {'up' if change > 0 else 'down'} today.\n"
+        f"Close: {close} | Change: {change} ({pct}%)\n\n"
         "Markets continue to react to global and domestic cues.\n"
         "This is not investment advice."
     )
 
-    meme_text = "Investor routine: check chart → sigh → repeat 📉📈"
+    return snapshot
 
-    return market_caption, meme_text
 
-# -------------------------
-# CREATE IMAGE WITH WATERMARK
-# -------------------------
+# ----------------------------
+# MEME TEXT
+# ----------------------------
+def generate_meme_text():
+    memes = [
+        "Investor routine: check chart → sigh → repeat 📉📈",
+        "Market opens. Hope opens. Market closes. Hope closes.",
+        "Long term investor since yesterday.",
+        "Portfolio red but conviction green.",
+        "Buy high. Sell low. Regret forever."
+    ]
+    return "😂 Meme Text\n\n" + memes[datetime.now().day % len(memes)]
+
+
+# ----------------------------
+# IMAGE CREATION (SAFE)
+# ----------------------------
 def create_post_image(text, filename):
-    img = Image.new("RGB", (1080, 1080), color=(18, 18, 18))
+    img = Image.new("RGB", (1080, 1080), (18, 18, 18))
     draw = ImageDraw.Draw(img)
 
     try:
-        font = ImageFont.truetype("arial.ttf", 46)
+        font = ImageFont.truetype("arial.ttf", 44)
     except:
         font = ImageFont.load_default()
 
@@ -72,7 +74,7 @@ def create_post_image(text, filename):
     if current:
         lines.append(current)
 
-    y = 300
+    y = 250
     for line in lines:
         bbox = draw.textbbox((0, 0), line, font=font)
         w = bbox[2] - bbox[0]
@@ -81,50 +83,37 @@ def create_post_image(text, filename):
         draw.text(((1080 - w) / 2, y), line, fill="white", font=font)
         y += h + 14
 
-    # watermark
-    draw.text((30, 1020), "@yourpage", fill="gray", font=font)
+    draw.text((30, 1030), "@yourpage", fill="gray", font=font)
 
     img.save(filename)
     print(f"🖼 Image created: {filename}")
 
-    y = 300
-    for line in lines:
-        w, h = draw.textsize(line, font=font)
-        draw.text(((1080 - w) / 2, y), line, fill="white", font=font)
-        y += h + 12
 
-    # Watermark
-    draw.text((30, 1020), "@yourpage", fill="gray", font=font)
-
-    img.save(filename)
-    print(f"🖼 Image created: {filename}")
-
-# -------------------------
-# MAIN CONTROLLER
-# -------------------------
+# ----------------------------
+# MAIN ENGINE
+# ----------------------------
 def main():
-    print("🚀 Bot engine running")
+    print("🚀 Bot engine running\n")
 
-    market = fetch_market_data()
-    if not market:
-        print("⚠️ Market data unavailable")
+    market_text = fetch_market_data()
+    meme_text = generate_meme_text()
+
+    if not market_text:
+        print("❌ Market data unavailable")
         return
 
-    caption, meme = generate_captions(market)
-
-    print("\n📊 Market Snapshot")
-    print(caption)
-
-    print("\n😂 Meme Text")
-    print(meme)
+    print(market_text)
+    print()
+    print(meme_text)
 
     today = datetime.now().strftime("%Y-%m-%d")
-    image_text = f"{market['index']} {market['pct']}%\n{meme}"
+    image_text = market_text + "\n\n" + meme_text
 
     create_post_image(image_text, f"post_{today}.png")
 
-# -------------------------
+
+# ----------------------------
 # ENTRY POINT
-# -------------------------
+# ----------------------------
 if __name__ == "__main__":
     main()
