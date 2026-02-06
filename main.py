@@ -116,3 +116,44 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+from PIL import Image, ImageDraw, ImageFont
+from datetime import datetime
+
+def create_post_image(text, filename):
+    width, height = 1080, 1080
+    bg_color = (15, 15, 15)
+    text_color = (255, 255, 255)
+    watermark_color = (160, 160, 160)
+
+    img = Image.new("RGB", (width, height), bg_color)
+    draw = ImageDraw.Draw(img)
+
+    try:
+        font = ImageFont.truetype("DejaVuSans-Bold.ttf", 48)
+        small_font = ImageFont.truetype("DejaVuSans.ttf", 32)
+    except:
+        font = ImageFont.load_default()
+        small_font = ImageFont.load_default()
+
+    # Main text
+    draw.multiline_text(
+        (80, 200),
+        text,
+        font=font,
+        fill=text_color,
+        spacing=10,
+        align="left"
+    )
+
+    # Watermark
+    watermark = "@yourpage | Market Insights"
+    draw.text(
+        (80, height - 100),
+        watermark,
+        font=small_font,
+        fill=watermark_color
+    )
+
+    img.save(filename)
+    print(f"🖼 Image created: {filename}")
