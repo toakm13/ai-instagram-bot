@@ -1,163 +1,111 @@
 import yfinance as yf
-import feedparser
-import random
+from datetime import datetime
+from PIL import Image, ImageDraw, ImageFont
 
 # -------------------------
-# MARKET DATA
+# FETCH MARKET DATA
 # -------------------------
 def fetch_market_data():
-    indices = {
-        "NIFTY 50": "^NSEI",
-        "SENSEX": "^BSESN",
-        "NIFTY BANK": "^NSEBANK"
+    ticker = yf.Ticker("^NSEI")  # NIFTY 50
+    data = ticker.history(period="5d")
+
+    if data.empty or len(data) < 2:
+        return None
+
+    last_close = round(data["Close"].iloc[-1], 2)
+    prev_close = round(data["Close"].iloc[-2], 2)
+    change = round(last_close - prev_close, 2)
+    pct = round((change / prev_close) * 100, 2)
+
+    return {
+        "index": "NIFTY 50",
+        "last": last_close,
+        "change": change,
+        "pct": pct
     }
 
-    print("📊 Market Snapshot\n")
-
-    for name, symbol in indices.items():
-        data = yf.Ticker(symbol).history(period="5d")
-
-        if data is None or len(data) < 2:
-            print(f"{name}: Not enough data\n")
-            continue
-
-        closes = data["Close"].dropna()
-        if len(closes) < 2:
-            print(f"{name}: Insufficient data\n")
-            continue
-
-        prev_close = closes.iloc[-2]
-        last_close = closes.iloc[-1]
-        change = ((last_close - prev_close) / prev_close) * 100
-
-        print(f"{name}")
-        print(f"Previous Close: {prev_close:.2f}")
-        print(f"Current Close: {last_close:.2f}")
-        print(f"Change: {change:.2f}%\n")
-
-
 # -------------------------
-# FINANCIAL NEWS
+# GENERATE TEXT CONTENT
 # -------------------------
-NEWS_FEEDS = [
-    "https://www.moneycontrol.com/rss/latestnews.xml",
-    "https://economictimes.indiatimes.com/markets/rssfeeds/1977021501.cms"
-]
+def generate_captions(market):
+    direction = "up" if market["change"] > 0 else "down"
 
-BIG_KEYWORDS = [
-    "rbi", "rate", "policy", "inflation", "interest",
-    "budget", "crash", "surge", "record", "ipo"
-]
-
-def fetch_financial_news():
-    print("📰 Market News\n")
-    big_news = False
-
-    for url in NEWS_FEEDS:
-        feed = feedparser.parse(url)
-        for entry in feed.entries[:5]:
-            title = entry.title
-            print("•", title)
-            if any(word in title.lower() for word in BIG_KEYWORDS):
-                big_news = True
-
-    print()
-    return big_news
-
-
-# -------------------------
-# CONTENT GENERATION
-# -------------------------
-def generate_market_caption(trend):
-    captions = [
-        "Markets ended the session with marginal gains amid mixed global cues.",
-        "A steady session as benchmarks closed with limited movement.",
-        "Markets traded cautiously today as investors tracked macro signals."
-    ]
-    return random.choice(captions)
-
-
-def generate_news_caption(is_big):
-    if is_big:
-        return "🚨 Big market-moving developments today. Staying informed is key."
-    return "📰 A calm news day with no major market shocks."
-
-
-def generate_meme_text():
-    memes = [
-        "That moment when the market finally moves after doing nothing all day 😅",
-        "Investor routine: check chart → sigh → repeat 📉",
-        "Markets teaching patience better than meditation 🧘‍♂️",
-        "One candle and emotions go wild 📊"
-    ]
-    return random.choice(memes)
-
-
-# -------------------------
-# MAIN
-# -------------------------
-def main():
-    print("🚀 Bot engine running\n")
-
-    fetch_market_data()
-    big_news = fetch_financial_news()
-
-    print("✍️ Generated Content\n")
-
-    print("Market Caption:")
-    print(generate_market_caption("flat"))
-
-    print("\nNews Caption:")
-    print(generate_news_caption(big_news))
-
-    print("\nMeme Text:")
-    print(generate_meme_text())
-
-    create_post_image(
-        meme_text,
-        f"meme_{datetime.now().strftime('%Y%m%d')}.png"
+    market_caption = (
+        f"{market['index']} closed {direction} today.\n"
+        f"Close: {market['last']} | Change: {market['change']} ({market['pct']}%)\n\n"
+        "Markets continue to react to global and domestic cues.\n"
+        "This is not investment advice."
     )
 
-if __name__ == "__main__":
-    main()
+    meme_text = "Investor routine: check chart → sigh → repeat 📉📈"
 
-from PIL import Image, ImageDraw, ImageFont
-from datetime import datetime
+    return market_caption, meme_text
 
+# -------------------------
+# CREATE IMAGE WITH WATERMARK
+# -------------------------
 def create_post_image(text, filename):
-    width, height = 1080, 1080
-    bg_color = (15, 15, 15)
-    text_color = (255, 255, 255)
-    watermark_color = (160, 160, 160)
-
-    img = Image.new("RGB", (width, height), bg_color)
+    img = Image.new("RGB", (1080, 1080), color=(18, 18, 18))
     draw = ImageDraw.Draw(img)
 
     try:
-        font = ImageFont.truetype("DejaVuSans-Bold.ttf", 48)
-        small_font = ImageFont.truetype("DejaVuSans.ttf", 32)
+        font = ImageFont.truetype("arial.ttf", 46)
     except:
         font = ImageFont.load_default()
-        small_font = ImageFont.load_default()
 
-    # Main text
-    draw.multiline_text(
-        (80, 200),
-        text,
-        font=font,
-        fill=text_color,
-        spacing=10,
-        align="left"
-    )
+    max_width = 900
+    words = text.split()
+    lines = []
+    current = ""
+
+    for word in words:
+        test = current + " " + word
+        w, _ = draw.textsize(test, font=font)
+        if w <= max_width:
+            current = test
+        else:
+            lines.append(current)
+            current = word
+    lines.append(current)
+
+    y = 300
+    for line in lines:
+        w, h = draw.textsize(line, font=font)
+        draw.text(((1080 - w) / 2, y), line, fill="white", font=font)
+        y += h + 12
 
     # Watermark
-    watermark = "@yourpage | Market Insights"
-    draw.text(
-        (80, height - 100),
-        watermark,
-        font=small_font,
-        fill=watermark_color
-    )
+    draw.text((30, 1020), "@yourpage", fill="gray", font=font)
 
     img.save(filename)
     print(f"🖼 Image created: {filename}")
+
+# -------------------------
+# MAIN CONTROLLER
+# -------------------------
+def main():
+    print("🚀 Bot engine running")
+
+    market = fetch_market_data()
+    if not market:
+        print("⚠️ Market data unavailable")
+        return
+
+    caption, meme = generate_captions(market)
+
+    print("\n📊 Market Snapshot")
+    print(caption)
+
+    print("\n😂 Meme Text")
+    print(meme)
+
+    today = datetime.now().strftime("%Y-%m-%d")
+    image_text = f"{market['index']} {market['pct']}%\n{meme}"
+
+    create_post_image(image_text, f"post_{today}.png")
+
+# -------------------------
+# ENTRY POINT
+# -------------------------
+if __name__ == "__main__":
+    main()
