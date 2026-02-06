@@ -113,6 +113,10 @@ def main():
     print("\nMeme Text:")
     print(generate_meme_text())
 
+    create_post_image(
+        meme_text,
+        f"meme_{datetime.now().strftime('%Y%m%d')}.png"
+    )
 
 if __name__ == "__main__":
     main()
