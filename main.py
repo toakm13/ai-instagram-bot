@@ -1,46 +1,55 @@
-from PIL import Image, ImageDraw, ImageFont
+import yfinance as yf
+import mplfinance as mpf
+import pandas as pd
+from PIL import Image, ImageDraw
 from datetime import datetime
-import textwrap
-import random
 
-today = datetime.now().strftime("%d %B %Y")
+ticker = "^NSEI"
 
-headlines = [
-    "NIFTY closes strong amid bullish momentum",
-    "Banking stocks lead market rally",
-    "IT sector gains after global optimism",
-    "FII buying boosts investor confidence",
-    "Markets remain volatile before key data"
-]
+data = yf.download(ticker, period="5d", interval="15m")
 
-headline = random.choice(headlines)
+latest_close = round(data["Close"].iloc[-1], 2)
+previous_close = round(data["Close"].iloc[-2], 2)
 
-psychology_lines = [
-    "Discipline beats emotion in trading.",
-    "Risk management creates consistency.",
-    "Patience is a trader’s superpower."
-]
+change = round(latest_close - previous_close, 2)
+pct_change = round((change / previous_close) * 100, 2)
 
-psychology = random.choice(psychology_lines)
+chart_file = "chart.png"
 
-img = Image.new("RGB", (1080, 1080), color=(15, 15, 15))
+mpf.plot(
+    data.tail(50),
+    type="candle",
+    style="charles",
+    volume=False,
+    savefig=chart_file
+)
+
+chart = Image.open(chart_file).resize((900, 500))
+
+img = Image.new("RGB", (1080, 1080), color=(10, 10, 10))
 draw = ImageDraw.Draw(img)
 
-title_font = ImageFont.load_default()
-text_font = ImageFont.load_default()
+img.paste(chart, (90, 120))
 
-draw.text((40, 50), "AI MARKET UPDATE", fill="white", font=title_font)
-draw.text((40, 120), today, fill="gray", font=text_font)
+title = "NIFTY MARKET UPDATE"
+price = f"NIFTY: {latest_close}"
+movement = f"{change} ({pct_change}%)"
 
-wrapped = textwrap.fill(headline, width=25)
-draw.text((40, 250), wrapped, fill="white", font=text_font)
+draw.text((90, 40), title, fill="white")
+draw.text((90, 650), price, fill="white")
 
-draw.text((40, 500), "TRADING PSYCHOLOGY", fill="orange", font=text_font)
+color = "green" if change >= 0 else "red"
 
-wrapped2 = textwrap.fill(psychology, width=30)
-draw.text((40, 560), wrapped2, fill="white", font=text_font)
+draw.text((90, 720), movement, fill=color)
+
+draw.text(
+    (90, 850),
+    "Discipline and risk management create consistency.",
+    fill="orange"
+)
 
 filename = f"post_{datetime.now().strftime('%Y-%m-%d')}.png"
+
 img.save(filename)
 
-print(f"Created {filename}")
+print(f"Saved {filename}")
