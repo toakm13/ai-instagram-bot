@@ -1,7 +1,9 @@
 import os
 import random
+import requests
 import yfinance as yf
 import mplfinance as mpf
+
 from PIL import Image, ImageDraw, ImageFont
 
 # =========================
@@ -15,7 +17,7 @@ headlines = [
     "BANKNIFTY Near Breakout Zone",
     "Markets May Stay Volatile Today",
     "Traders Watching Key Resistance",
-    "Bullish Momentum Building Up",
+    "Bullish Momentum Building Up"
 ]
 
 caption = random.choice(headlines)
@@ -34,7 +36,7 @@ data = yf.download(
 # Fix dataframe structure
 data.columns = data.columns.get_level_values(0)
 
-# Convert all to float
+# Convert values to float
 data = data.astype(float)
 
 # Remove empty rows
@@ -56,12 +58,12 @@ mpf.plot(
 )
 
 # =========================
-# CREATE INSTAGRAM POST IMAGE
+# CREATE INSTAGRAM IMAGE
 # =========================
 
 img = Image.open(chart_file)
 
-# Resize for Instagram Reel
+# Instagram reel size
 img = img.resize((1080, 1920))
 
 draw = ImageDraw.Draw(img)
@@ -72,7 +74,7 @@ try:
 except:
     font = ImageFont.load_default()
 
-# Draw text
+# Add headline text
 draw.text(
     (50, 100),
     caption,
@@ -80,8 +82,8 @@ draw.text(
     font=font
 )
 
-# Save final image
 final_image = "post.png"
+
 img.save(final_image)
 
 print("Post image created successfully.")
@@ -91,19 +93,22 @@ print("Post image created successfully.")
 # =========================
 
 os.system(
-    f'ffmpeg -loop 1 -i {final_image} -c:v libx264 '
-    f'-t 6 -pix_fmt yuv420p -vf "scale=1080:1920" reel.mp4 -y'
+    f'ffmpeg -loop 1 -i {final_image} '
+    f'-c:v libx264 -t 6 -pix_fmt yuv420p '
+    f'-vf "scale=1080:1920" reel.mp4 -y'
 )
 
 print("Reel video created successfully.")
 
 # =========================
-# INSTAGRAM AUTO POST
+# UPLOAD REEL TO INSTAGRAM
 # =========================
 
 PAGE_ACCESS_TOKEN = os.getenv("PAGE_ACCESS_TOKEN")
 IG_USER_ID = os.getenv("IG_USER_ID")
 
+# IMPORTANT:
+# Replace this with YOUR raw GitHub reel URL later
 video_url = "https://raw.githubusercontent.com/toakm13/ai-instagram-bot/main/reel.mp4"
 
 create_url = f"https://graph.facebook.com/v25.0/{IG_USER_ID}/media"
@@ -115,6 +120,11 @@ create_payload = {
     "access_token": PAGE_ACCESS_TOKEN
 }
 
-response = requests.post(create_url, data=create_payload)
+response = requests.post(
+    create_url,
+    data=create_payload
+)
 
 print(response.text)
+
+print("Instagram upload request sent.")
