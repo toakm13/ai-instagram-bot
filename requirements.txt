@@ -1,4 +1,7 @@
-yfinance
-pillow
-feedparser
-openai>=1.0.0
+moviepy
+requests
+Pillow
+python-dotenv
+imageio
+imageio-ffmpeg
+numpy
