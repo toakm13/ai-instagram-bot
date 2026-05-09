@@ -1,55 +1,120 @@
+import os
+import random
 import yfinance as yf
 import mplfinance as mpf
-import pandas as pd
-from PIL import Image, ImageDraw
-from datetime import datetime
+from PIL import Image, ImageDraw, ImageFont
 
-ticker = "^NSEI"
+# =========================
+# SETTINGS
+# =========================
 
-data = yf.download(ticker, period="5d", interval="15m")
+ticker = random.choice(["^NSEI", "^NSEBANK"])
 
-latest_close = round(data["Close"].iloc[-1], 2)
-previous_close = round(data["Close"].iloc[-2], 2)
+headlines = [
+    "NIFTY Showing Strong Momentum",
+    "BANKNIFTY Near Breakout Zone",
+    "Markets May Stay Volatile Today",
+    "Traders Watching Key Resistance",
+    "Bullish Momentum Building Up",
+]
 
-change = round(latest_close - previous_close, 2)
-pct_change = round((change / previous_close) * 100, 2)
+caption = random.choice(headlines)
+
+# =========================
+# DOWNLOAD MARKET DATA
+# =========================
+
+data = yf.download(
+    ticker,
+    period="5d",
+    interval="15m",
+    auto_adjust=True
+)
+
+# Fix dataframe structure
+data.columns = data.columns.get_level_values(0)
+
+# Convert all to float
+data = data.astype(float)
+
+# Remove empty rows
+data.dropna(inplace=True)
+
+# =========================
+# CREATE CHART
+# =========================
 
 chart_file = "chart.png"
 
 mpf.plot(
-    data.tail(50),
+    data,
     type="candle",
     style="charles",
-    volume=False,
+    volume=True,
+    mav=(5, 10),
     savefig=chart_file
 )
 
-chart = Image.open(chart_file).resize((900, 500))
+# =========================
+# CREATE INSTAGRAM POST IMAGE
+# =========================
 
-img = Image.new("RGB", (1080, 1080), color=(10, 10, 10))
+img = Image.open(chart_file)
+
+# Resize for Instagram Reel
+img = img.resize((1080, 1920))
+
 draw = ImageDraw.Draw(img)
 
-img.paste(chart, (90, 120))
+# Font
+try:
+    font = ImageFont.truetype("arial.ttf", 60)
+except:
+    font = ImageFont.load_default()
 
-title = "NIFTY MARKET UPDATE"
-price = f"NIFTY: {latest_close}"
-movement = f"{change} ({pct_change}%)"
-
-draw.text((90, 40), title, fill="white")
-draw.text((90, 650), price, fill="white")
-
-color = "green" if change >= 0 else "red"
-
-draw.text((90, 720), movement, fill=color)
-
+# Draw text
 draw.text(
-    (90, 850),
-    "Discipline and risk management create consistency.",
-    fill="orange"
+    (50, 100),
+    caption,
+    fill="white",
+    font=font
 )
 
-filename = f"post_{datetime.now().strftime('%Y-%m-%d')}.png"
+# Save final image
+final_image = "post.png"
+img.save(final_image)
 
-img.save(filename)
+print("Post image created successfully.")
 
-print(f"Saved {filename}")
+# =========================
+# CREATE REEL VIDEO
+# =========================
+
+os.system(
+    f'ffmpeg -loop 1 -i {final_image} -c:v libx264 '
+    f'-t 6 -pix_fmt yuv420p -vf "scale=1080:1920" reel.mp4 -y'
+)
+
+print("Reel video created successfully.")
+
+# =========================
+# INSTAGRAM AUTO POST
+# =========================
+
+PAGE_ACCESS_TOKEN = os.getenv("PAGE_ACCESS_TOKEN")
+IG_USER_ID = os.getenv("IG_USER_ID")
+
+video_url = "https://raw.githubusercontent.com/toakm13/ai-instagram-bot/main/reel.mp4"
+
+create_url = f"https://graph.facebook.com/v25.0/{IG_USER_ID}/media"
+
+create_payload = {
+    "media_type": "REELS",
+    "video_url": video_url,
+    "caption": caption,
+    "access_token": PAGE_ACCESS_TOKEN
+}
+
+response = requests.post(create_url, data=create_payload)
+
+print(response.text)
