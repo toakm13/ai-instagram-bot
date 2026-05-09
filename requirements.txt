@@ -1,10 +1,8 @@
+Pillow
 moviepy==1.0.3
-Pillow==9.5.0
-numpy==1.26.4
 requests
-python-dotenv
 imageio
 imageio-ffmpeg
-decorator
-tqdm
+numpy<2
+decorator<5
 proglog
