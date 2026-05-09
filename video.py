@@ -1,27 +1,31 @@
-import subprocess
-import glob
-from datetime import date
+from moviepy.editor import ImageClip
+from datetime import datetime
 
-def create_reel_from_image():
-    today = date.today().isoformat()
-    image_file = f"post_{today}.png"
-    output_video = f"reel_{today}.mp4"
+# -----------------------------------
+# DATE
+# -----------------------------------
 
-    # ffmpeg zoom & pan (Ken Burns effect)
-    command = [
-        "ffmpeg",
-        "-y",
-        "-loop", "1",
-        "-i", image_file,
-        "-vf",
-        "scale=1080:1920,zoompan=z='min(zoom+0.0005,1.05)':d=150",
-        "-t", "6",
-        "-pix_fmt", "yuv420p",
-        output_video
-    ]
+now = datetime.now()
+date_text = now.strftime("%Y-%m-%d")
 
-    subprocess.run(command, check=True)
-    print(f"🎬 Reel created: {output_video}")
+image_file = f"post_{date_text}.png"
+video_file = f"reel_{date_text}.mp4"
 
-if __name__ == "__main__":
-    create_reel_from_image()
+# -----------------------------------
+# CREATE REEL
+# -----------------------------------
+
+clip = (
+    ImageClip(image_file)
+    .set_duration(6)
+    .resize((1080, 1920))
+)
+
+clip.write_videofile(
+    video_file,
+    fps=24,
+    codec="libx264",
+    audio=False,
+)
+
+print(f"✅ Reel created: {video_file}")
