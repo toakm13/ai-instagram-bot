@@ -6,3 +6,7 @@ imageio-ffmpeg
 numpy<2
 decorator<5
 proglog
+yfinance
+pandas
+matplotlib
+mplfinance
