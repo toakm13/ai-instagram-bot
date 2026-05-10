@@ -2,12 +2,17 @@ name: AI Market Content Bot
 
 on:
   workflow_dispatch:
+
   schedule:
-    - cron: "0 9 * * *"
+    # 9:00 AM IST daily
+    - cron: "30 3 * * *"
 
 jobs:
   run-bot:
     runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
 
     steps:
       - name: Checkout repository
@@ -19,31 +24,30 @@ jobs:
           python-version: "3.11"
 
       - name: Install FFmpeg
-        run: sudo apt-get update && sudo apt-get install -y ffmpeg
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
 
       - name: Install Python dependencies
         run: |
-          pip install --upgrade pip
+          python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Run market content generator
-        run: python main.py
-
-      - name: Create reel video
-        run: python video.py
-
-      - name: Upload reel to repo
+      - name: Run automation bot
+        env:
+          PAGE_ACCESS_TOKEN: ${{ secrets.PAGE_ACCESS_TOKEN }}
+          FB_PAGE_ID: ${{ secrets.FB_PAGE_ID }}
+          IG_USER_ID: ${{ secrets.IG_USER_ID }}
         run: |
-          git config --global user.email "bot@github.com"
-          git config --global user.name "github-actions"
+          python main.py
 
-          git add reel.mp4
-          git commit -m "Update reel" || echo "No changes"
+      - name: Commit generated files
+        run: |
+          git config --global user.name "github-actions"
+          git config --global user.email "github-actions@github.com"
+
+          git add .
+
+          git commit -m "Auto-generated market content" || echo "No changes"
 
           git push
-
-      - name: Publish to Instagram
-        env:
-          IG_USER_ID: ${{ secrets.IG_USER_ID }}
-          PAGE_ACCESS_TOKEN: ${{ secrets.PAGE_ACCESS_TOKEN }}
-        run: python post.py
