@@ -34,6 +34,13 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Sync to latest main
+        run: |
+          git fetch origin main
+          git reset --hard origin/main
 
       - name: Set up Python
         uses: actions/setup-python@v6
@@ -69,12 +76,17 @@ jobs:
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
 
-          git add post.png chart.png caption.txt reel.mp4
+          git add post.png chart.png caption.txt
+          if [ -f reel.mp4 ]; then
+            git add reel.mp4
+          fi
 
           if git diff --cached --quiet; then
             echo "No generated file changes."
           else
             git commit -m "Auto-generated market content"
+            git fetch origin main
+            git rebase origin/main
             git push origin HEAD:main
           fi
 
