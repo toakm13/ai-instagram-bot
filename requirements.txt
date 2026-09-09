@@ -7,3 +7,4 @@ yfinance>=0.2.66,<2
 pandas>=2.2,<4
 matplotlib>=3.9,<4
 mplfinance>=0.12.10b0,<1
+pytest>=8,<10
