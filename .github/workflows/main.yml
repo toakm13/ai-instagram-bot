@@ -36,11 +36,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: main
-
-      - name: Sync to latest main
-        run: |
-          git fetch origin main
-          git reset --hard origin/main
+          fetch-depth: 0
 
       - name: Set up Python
         uses: actions/setup-python@v6
@@ -60,6 +56,11 @@ jobs:
           test -n "$PAGE_ACCESS_TOKEN" || { echo "::error::PAGE_ACCESS_TOKEN is missing"; exit 1; }
           test -n "$IG_USER_ID" || { echo "::error::IG_USER_ID is missing"; exit 1; }
 
+      - name: Validate Meta/Instagram authentication
+        env:
+          META_GRAPH_API_VERSION: v26.0
+        run: python post.py --validate-only
+
       - name: Run regression tests
         run: pytest -q
 
@@ -73,8 +74,15 @@ jobs:
       - name: Commit generated media
         id: media_commit
         run: |
+          set -euo pipefail
+
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
+
+          # Rebase before creating the generated-media commit so the public
+          # commit is based on the newest main branch.
+          git fetch origin main
+          git rebase origin/main
 
           git add post.png chart.png caption.txt
           if [ -f reel.mp4 ]; then
@@ -85,10 +93,23 @@ jobs:
             echo "No generated file changes."
           else
             git commit -m "Auto-generated market content"
+          fi
+
+          # Push with a small retry loop for a remote update that arrives
+          # between fetch/rebase and push.
+          for attempt in 1 2 3; do
+            if git push origin HEAD:main; then
+              break
+            fi
+
+            if [ "$attempt" -eq 3 ]; then
+              echo "::error::Could not push generated media after 3 attempts."
+              exit 1
+            fi
+
             git fetch origin main
             git rebase origin/main
-            git push origin HEAD:main
-          fi
+          done
 
           echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
 
