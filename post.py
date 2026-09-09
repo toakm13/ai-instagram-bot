@@ -13,7 +13,6 @@ ACCESS_TOKEN = os.getenv("PAGE_ACCESS_TOKEN")
 MEDIA_SHA = os.getenv("MEDIA_SHA")
 GITHUB_REPOSITORY = os.getenv("GITHUB_REPOSITORY")
 CONTENT_TYPE = os.getenv("CONTENT_TYPE", "image").lower()
-
 CAPTION_FILE = Path(os.getenv("CAPTION_FILE", "caption.txt"))
 
 TIMEOUT = 30
@@ -48,7 +47,7 @@ def require_config():
 
 def api_request(method: str, path: str, **kwargs):
     url = f"{GRAPH_BASE}/{path.lstrip('/')}"
-    params = kwargs.pop("params", {})
+    params = dict(kwargs.pop("params", {}))
     params["access_token"] = ACCESS_TOKEN
 
     response = requests.request(
@@ -72,6 +71,25 @@ def api_request(method: str, path: str, **kwargs):
         )
 
     return payload
+
+
+def validate_instagram_account():
+    payload = api_request(
+        "GET",
+        f"/{IG_USER_ID}",
+        params={"fields": "id,username"},
+    )
+
+    returned_id = str(payload.get("id", ""))
+    if returned_id != str(IG_USER_ID):
+        raise MetaAPIError(
+            f"IG_USER_ID mismatch: configured {IG_USER_ID}, Meta returned {returned_id}"
+        )
+
+    print(
+        f"Authenticated Instagram account: "
+        f"@{payload.get('username', '<unknown>')} ({returned_id})"
+    )
 
 
 def public_media_url(filename: str) -> str:
@@ -165,6 +183,7 @@ def publish_container(creation_id: str) -> str:
 
 def main():
     require_config()
+    validate_instagram_account()
     caption = load_caption()
 
     print(f"Publishing daily Instagram {CONTENT_TYPE} post")
