@@ -1,3 +1,4 @@
+import argparse
 import json
 import os
 import time
@@ -24,24 +25,28 @@ class MetaAPIError(RuntimeError):
     pass
 
 
-def require_config():
-    missing = []
-    for name, value in {
+def require_config(require_media: bool = True):
+    required = {
         "IG_USER_ID": IG_USER_ID,
         "PAGE_ACCESS_TOKEN": ACCESS_TOKEN,
-        "MEDIA_SHA": MEDIA_SHA,
-        "GITHUB_REPOSITORY": GITHUB_REPOSITORY,
-    }.items():
-        if not value:
-            missing.append(name)
+    }
 
+    if require_media:
+        required.update(
+            {
+                "MEDIA_SHA": MEDIA_SHA,
+                "GITHUB_REPOSITORY": GITHUB_REPOSITORY,
+            }
+        )
+
+    missing = [name for name, value in required.items() if not value]
     if missing:
         raise RuntimeError(f"Missing required configuration: {', '.join(missing)}")
 
     if CONTENT_TYPE not in {"image", "reel"}:
         raise RuntimeError("CONTENT_TYPE must be 'image' or 'reel'")
 
-    if not CAPTION_FILE.exists():
+    if require_media and not CAPTION_FILE.exists():
         raise RuntimeError(f"Caption file not found: {CAPTION_FILE}")
 
 
@@ -93,7 +98,26 @@ def validate_instagram_account():
 
 
 def public_media_url(filename: str) -> str:
-    return f"https://raw.githubusercontent.com/{GITHUB_REPOSITORY}/{MEDIA_SHA}/{filename}"
+    return (
+        f"https://raw.githubusercontent.com/"
+        f"{GITHUB_REPOSITORY}/{MEDIA_SHA}/{filename}"
+    )
+
+
+def verify_public_media(filename: str):
+    url = public_media_url(filename)
+    try:
+        response = requests.head(url, allow_redirects=True, timeout=TIMEOUT)
+    except requests.RequestException as exc:
+        raise RuntimeError(f"Could not reach generated media URL: {url}") from exc
+
+    if response.status_code != 200:
+        raise RuntimeError(
+            f"Generated media is not publicly reachable: {url} "
+            f"(HTTP {response.status_code})"
+        )
+
+    print(f"Generated media is publicly reachable: {url}")
 
 
 def load_caption() -> str:
@@ -142,6 +166,7 @@ def wait_for_container(container_id: str):
 def create_container(caption: str) -> str:
     if CONTENT_TYPE == "image":
         media_url = public_media_url("post.png")
+        verify_public_media("post.png")
         print(f"Creating Instagram image container from {media_url}")
         payload = api_request(
             "POST",
@@ -150,6 +175,7 @@ def create_container(caption: str) -> str:
         )
     else:
         media_url = public_media_url("reel.mp4")
+        verify_public_media("reel.mp4")
         print(f"Creating Instagram Reel container from {media_url}")
         payload = api_request(
             "POST",
@@ -182,7 +208,21 @@ def publish_container(creation_id: str) -> str:
 
 
 def main():
-    require_config()
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--validate-only",
+        action="store_true",
+        help="Validate Meta credentials and the configured Instagram account without publishing.",
+    )
+    args = parser.parse_args()
+
+    if args.validate_only:
+        require_config(require_media=False)
+        validate_instagram_account()
+        print("Meta/Instagram authentication preflight passed.")
+        return
+
+    require_config(require_media=True)
     validate_instagram_account()
     caption = load_caption()
 
