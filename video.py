@@ -1,16 +1,27 @@
-from moviepy.editor import ImageClip
+import subprocess
+from pathlib import Path
 
-image_file = "post.png"
+INPUT = Path("post.png")
+OUTPUT = Path("reel.mp4")
 
-clip = (
-    ImageClip(image_file)
-    .set_duration(6)
-    .resize((1080, 1920))
-)
 
-clip.write_videofile(
-    "reel.mp4",
-    fps=24
-)
+def main():
+    if not INPUT.exists():
+        raise RuntimeError(f"{INPUT} does not exist. Run main.py first.")
 
-print("Reel created successfully.")
+    command = [
+        "ffmpeg", "-y", "-loop", "1", "-i", str(INPUT),
+        "-t", "6",
+        "-vf",
+        "scale=1080:1920:force_original_aspect_ratio=decrease,"
+        "pad=1080:1920:(ow-iw)/2:(oh-ih)/2",
+        "-r", "30", "-c:v", "libx264", "-pix_fmt", "yuv420p",
+        "-movflags", "+faststart", str(OUTPUT),
+    ]
+
+    subprocess.run(command, check=True)
+    print(f"Created {OUTPUT}")
+
+
+if __name__ == "__main__":
+    main()
