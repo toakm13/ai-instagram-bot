@@ -53,6 +53,9 @@ jobs:
           test -n "$PAGE_ACCESS_TOKEN" || { echo "::error::PAGE_ACCESS_TOKEN is missing"; exit 1; }
           test -n "$IG_USER_ID" || { echo "::error::IG_USER_ID is missing"; exit 1; }
 
+      - name: Run regression tests
+        run: pytest -q
+
       - name: Generate market content
         run: python main.py
 
