@@ -1,0 +1,72 @@
+{
+  "categories": {
+    "market_emotions": [
+      ["RED DAY, GREEN DAY", "Red market: I am finished.\nGreen market: I am Warren Buffett."],
+      ["THE 0.30% MOVE", "Market moves 0.30%.\n\nOption premium: I have decided to experience every emotion today."],
+      ["BUY THE DIP", "Market falls 1%.\nMe: Buy the dip.\n\nMarket falls 2%.\nMe: Wait for confirmation.\n\nMarket falls 5%.\nMe: Maybe cash is an asset."],
+      ["WHEN THE MARKET RALLIES", "Me before the rally: I need a better entry.\n\nMe during the rally: Why didn't I buy? 😭"],
+      ["PORTFOLIO CHECK", "Portfolio: -2%\nMe: Long term. 😌\n\nPortfolio: +2%\nMe: Should I book profit? 🤔"]
+    ],
+    "fomo_and_herding": [
+      ["FOMO CHECK", "Friend: Everyone is buying this.\nMe: Why?\nFriend: Everyone is buying it."],
+      ["LATE TO THE PARTY", "Stock: +8%\nMe: Too late.\n\nStock: +15%\nMe: Maybe I should enter.\n\nStock: +20%\nMe: YOLO."],
+      ["GROUP CHAT ANALYST", "One message in the group chat:\n\n\"Bro this will definitely go up.\"\n\nSuddenly everyone becomes an analyst."],
+      ["TRENDING = RESEARCH?", "Trending topic:\n🔥🔥🔥\n\nMy brain:\nThis must be fundamental analysis."],
+      ["RECENCY BIAS", "One great week in the market.\n\nMe: I have finally understood markets.\n\nMarket next week: 😂"]
+    ],
+    "options_and_trading": [
+      ["OPTION BUYER", "Market: sideways\n\nOption buyer: Why is my premium disappearing?\n\nTheta: Hello there."],
+      ["EXPIRY DAY", "9:14 AM: Calm.\n10:30 AM: Strategy.\n12:00 PM: Risk management.\n2:30 PM: Hope management."],
+      ["STOP LOSS", "Me: I will follow my stop loss this time.\n\nMarket: touches SL and reverses.\n\nMe: I knew it."],
+      ["LEVERAGE", "Small move in index:\n😐\n\nSame move with leverage:\n😳📈📉"],
+      ["PAPER TRADE VS REAL MONEY", "Paper trade: Perfect execution.\n\nReal money: Suddenly I have 47 questions."],
+      ["OVERTRADING", "First trade: Plan.\nSecond trade: Confidence.\nThird trade: Revenge.\nFourth trade: Character development."]
+    ],
+    "investing_habits": [
+      ["SIP DAY", "SIP debited.\n\nMe: Future me will thank me.\n\nFuture me: Please continue."],
+      ["LONG TERM MEANS LONG TERM", "Me: I am a long-term investor.\n\nAlso me after 11 days: Why hasn't it doubled?"],
+      ["COMPOUNDING", "Compounding: Slow at first.\n\nMe: Is anything happening?\n\nCompounding: Give me time."],
+      ["DIVERSIFICATION", "Me: I need diversification.\n\nAlso me: 14 funds with the same top holdings."],
+      ["PORTFOLIO APP", "Checking portfolio once a year: sensible.\n\nChecking it 14 times before lunch: apparently my full-time job."]
+    ],
+    "salary_and_personal_finance": [
+      ["SALARY DAY", "Salary credited 💰\nRent: gone\nEMI: gone\nBills: gone\n\nMe: This month I will definitely invest more."],
+      ["SALARY HIKE", "Salary hike: +10%\n\nLifestyle: We can work with that."],
+      ["LIFESTYLE INFLATION", "Salary increased.\n\nPhone upgraded.\nSubscriptions increased.\nEating out increased.\n\nSavings: same."],
+      ["MONTH END", "1st: Financial freedom starts today.\n\n28th: Which UPI transaction was that?"],
+      ["EMI TRAP", "Me: I can afford the EMI.\n\nBank: Excellent.\n\nFuture me: Interesting."],
+      ["BUDGETING", "Budget: ₹50,000\nActual spending: ₹63,417\n\nMe: At least the spreadsheet looks good."],
+      ["FIRST SALARY", "First salary: I will save everything.\n\nFirst weekend: I deserve a little treat.\n\nTreat: ₹4,999."],
+      ["EMERGENCY FUND", "Emergency fund: boring when nothing happens.\n\nEmergency: suddenly the most interesting account."],
+      ["CREDIT CARD", "Credit card statement:\n\"Do you remember everything you bought?\"\n\nMe: Not emotionally."],
+      ["ONLINE SHOPPING", "Me: I only came online to check one thing.\n\nCart: 7 items\n\nFinance education: buffering…"]
+    ],
+    "investor_psychology": [
+      ["LOSS AVERSION", "Profit: Nice.\n\nLoss: PERSONAL ATTACK."],
+      ["ANCHORING", "Stock was ₹500.\nNow ₹400.\n\nMe: It's cheap.\n\nBusiness fundamentals: Can we talk?"],
+      ["OVERCONFIDENCE", "Three profitable trades later:\n\nMe: I have cracked the market.\n\nMarket: Cute."],
+      ["PATIENCE", "Compounding needs time.\n\nMy brain: We have 12 minutes."],
+      ["COMPARISON", "Me: My portfolio is doing okay.\n\nInstagram: Someone made 40% this month.\n\nMe: I need a new identity."],
+      ["PANIC SELLING", "Market falls.\n\nBrain: Protect capital!\n\nPlan: What about the original time horizon?\n\nBrain: Not now."],
+      ["CONFIRMATION BIAS", "I made a decision.\n\nNow I only read articles that agree with me."],
+      ["REVENGE TRADING", "Loss: ₹1,000\nMe: Stop for today.\n\nBrain: Or… we could make it ₹2,000."],
+      ["RECENCY", "Last month's return becomes\nthis month's expectation.\n\nMarkets: No promises."],
+      ["DISCIPLINE", "Strategy: boring.\n\nResults: uncertain.\n\nDiscipline: still doing the work."]
+    ],
+    "money_and_life": [
+      ["PARENT QUESTION", "Me: I started investing.\n\nParent: FD kitna de raha hai?\n\nMe: …Here we go."],
+      ["RELATIVE RETURNS", "Relative: Beta ne kya liya?\n\nMe: Peace of mind."],
+      ["VACATION VS INVESTMENT", "Trip booked in 4 minutes.\n\nInvestment decision: 4 weeks of research."],
+      ["RICH ON PAPER", "Portfolio looks great.\n\nThen rent, EMI and school fees arrive.\n\nPersonal finance enters the chat."],
+      ["MONEY TALK", "Friends discussing salary: 😂\n\nFriends discussing investing: suddenly everyone has a secret strategy."],
+      ["WEALTH CREATION", "Everyone wants the result.\n\nVery few people want the boring repetition." ]
+    ],
+    "education_bites": [
+      ["SIP ≠ MAGIC", "SIP is a method of investing regularly.\n\nIt does not remove market risk.\n\nYour finance meme just became educational."],
+      ["VOLATILITY VS RISK", "Volatility: price moves.\n\nRisk: the chance of an adverse outcome.\n\nNot every red candle is the same thing."],
+      ["PRICE VS VALUE", "Price: what the market quotes.\nValue: what you believe an asset is worth.\n\nThe two can disagree."],
+      ["DIVERSIFICATION", "Diversification: not owning everything.\n\nIt is spreading exposure so one mistake does not dominate the whole portfolio."],
+      ["LIQUIDITY", "Asset can be valuable.\n\nBut if you need cash today, liquidity suddenly matters a lot." ]
+    ]
+  }
+}
