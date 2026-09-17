@@ -94,6 +94,11 @@ def publish(caption,media_url,when):
     return {"ok":False,"error":err}
 def commit_asset(path):
     subprocess.run(["git","config","user.name","evidyarthee-bot"],check=True); subprocess.run(["git","config","user.email","41898282+github-actions[bot]@users.noreply.github.com"],check=True); subprocess.run(["git","add",str(path)],check=True); subprocess.run(["git","commit","-m","chore: publish Evidyarthee asset"],check=False); subprocess.run(["git","push","origin","HEAD:main"],check=True); return f"https://raw.githubusercontent.com/{env('GITHUB_REPOSITORY')}/main/{path.as_posix()}"
+def persist_state(state):
+    save_state(state)
+    subprocess.run(["git","add",str(STATE)],check=True)
+    subprocess.run(["git","commit","-m","chore: persist Evidyarthee run state"],check=False)
+    subprocess.run(["git","push","origin","HEAD:main"],check=True)
 def run(lane):
     if killed():return {"status":"blocked","reason":"Emergency kill switch active"}
     state=load_state()
@@ -107,7 +112,9 @@ def run(lane):
     render(title,body,source,asset)
     if asset.stat().st_size>8*1024*1024:return {"status":"blocked","reason":"Asset too large"}
     media=commit_asset(asset); when=datetime.now(TZ)+timedelta(minutes=2); caption=f"📌 {title}\n\n{body}\n\nयह educational market content है, buy/sell recommendation नहीं।\n\nSource: {source}\n#Evidyarthee #FinancialEducation #MarketUpdate"; result=publish(caption,media,when)
-    state.setdefault("fingerprints",[]).append(fp); state.setdefault("runs",[]).append({"at":datetime.now(TZ).isoformat(),"lane":lane,"status":"queued" if result.get("ok") else "failed","metricool":result}); save_state(state); return {"status":"queued" if result.get("ok") else "failed","lane":lane,"metricool":result,"publish_at":when.isoformat()}
+    if result.get("ok"):
+        state.setdefault("fingerprints",[]).append(fp); state.setdefault("runs",[]).append({"at":datetime.now(TZ).isoformat(),"lane":lane,"status":"queued","metricool":result}); persist_state(state)
+    return {"status":"queued" if result.get("ok") else "failed","lane":lane,"metricool":result,"publish_at":when.isoformat()}
 if __name__=="__main__":
     import argparse
     p=argparse.ArgumentParser(); p.add_argument("lane",choices=["pre-market","educational","post-market","news"]); a=p.parse_args(); print(json.dumps(run(a.lane),ensure_ascii=False,indent=2)); raise SystemExit(0)
