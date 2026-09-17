@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
   schedule:
     # Daily 7:30 PM IST = 14:00 UTC
-    - cron: '0 14 * * *'
+    - cron: "0 14 * * *"
 
 concurrency:
   group: evidyarthee-daily-meme
@@ -26,19 +26,23 @@ jobs:
         with:
           ref: main
           fetch-depth: 0
+
       - name: Python
         uses: actions/setup-python@v6
         with:
-          python-version: '3.12'
+          python-version: "3.12"
+
       - name: Dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install requests Pillow
+          pip install -r requirements.txt
+
       - name: Validate secrets
         run: |
-          test -n "$METRICOOL_USER_TOKEN" || { echo '::error::METRICOOL_USER_TOKEN missing'; exit 1; }
-          test -n "$METRICOOL_USER_ID" || { echo '::error::METRICOOL_USER_ID missing'; exit 1; }
-          test -n "$METRICOOL_BLOG_ID" || { echo '::error::METRICOOL_BLOG_ID missing'; exit 1; }
-          test -n "$EVIDYARTHEE_EMERGENCY_KILL_SWITCH" || { echo '::error::EVIDYARTHEE_EMERGENCY_KILL_SWITCH missing'; exit 1; }
+          test -n "$METRICOOL_USER_TOKEN" || { echo "::error::METRICOOL_USER_TOKEN missing"; exit 1; }
+          test -n "$METRICOOL_USER_ID" || { echo "::error::METRICOOL_USER_ID missing"; exit 1; }
+          test -n "$METRICOOL_BLOG_ID" || { echo "::error::METRICOOL_BLOG_ID missing"; exit 1; }
+          test -n "$EVIDYARTHEE_EMERGENCY_KILL_SWITCH" || { echo "::error::EVIDYARTHEE_EMERGENCY_KILL_SWITCH missing"; exit 1; }
+
       - name: Generate and publish daily meme
         run: python meme_engine_v2.py
