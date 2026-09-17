@@ -1,6 +1,13 @@
 name: Evidyarthee Production Engine
 
 on:
+  # Temporary production smoke trigger: a code push to the live runner starts
+  # an educational lane run automatically. Generated assets/state live under
+  # data/ and are excluded, so the runner cannot recursively trigger itself.
+  push:
+    branches: [main]
+    paths:
+      - "evidyarthee_live.py"
   workflow_dispatch:
     inputs:
       lane:
@@ -72,6 +79,8 @@ jobs:
         run: |
           if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
             echo "lane=$MANUAL_LANE" >> "$GITHUB_OUTPUT"
+          elif [ "$EVENT_NAME" = "push" ]; then
+            echo "lane=educational" >> "$GITHUB_OUTPUT"
           elif [ "$EVENT_ACTION" = "15 3 * * 1-5" ]; then
             echo "lane=pre-market" >> "$GITHUB_OUTPUT"
           elif [ "$EVENT_ACTION" = "0 8 * * 1-5" ]; then
