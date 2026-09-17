@@ -1,13 +1,13 @@
 name: Evidyarthee Production Engine
 
 on:
-  # Temporary production smoke trigger: a code push to the live runner starts
-  # an educational lane run automatically. Generated assets/state live under
-  # data/ and are excluded, so the runner cannot recursively trigger itself.
+  # Production smoke trigger for changes to the live runner or visual system.
   push:
     branches: [main]
     paths:
       - "evidyarthee_live.py"
+      - "evidyarthee_production.py"
+      - "evidyarthee_templates.py"
   workflow_dispatch:
     inputs:
       lane:
@@ -92,4 +92,4 @@ jobs:
           fi
 
       - name: Run Evidyarthee research → validate → publish
-        run: python evidyarthee_live.py "${{ steps.lane.outputs.lane }}"
+        run: python evidyarthee_production.py "${{ steps.lane.outputs.lane }}"
