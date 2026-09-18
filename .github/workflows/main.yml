@@ -1,13 +1,6 @@
 name: Evidyarthee Production Engine
 
 on:
-  # Production smoke trigger for changes to the live runner or visual system.
-  push:
-    branches: [main]
-    paths:
-      - "evidyarthee_live.py"
-      - "evidyarthee_production.py"
-      - "evidyarthee_templates.py"
   workflow_dispatch:
     inputs:
       lane:
@@ -21,13 +14,17 @@ on:
           - post-market
           - news
   schedule:
-    # All times UTC. India is UTC+5:30.
-    # 08:45 IST pre-market, 13:30 IST educational, 16:30 IST post-market.
-    - cron: "15 3 * * 1-5"
-    - cron: "0 8 * * 1-5"
-    - cron: "0 11 * * 1-5"
-    # Material-news watcher, every 10 minutes on weekdays.
+    # Asia/Kolkata. Jobs are deliberately started before publication time so
+    # Metricool can receive an exact target timestamp.
+    - cron: "40 8 * * 1-5"
+      timezone: "Asia/Kolkata"
+    - cron: "25 13 * * 1-5"
+      timezone: "Asia/Kolkata"
+    - cron: "25 16 * * 1-5"
+      timezone: "Asia/Kolkata"
+    # Material-news watcher.
     - cron: "*/10 * * * 1-5"
+      timezone: "Asia/Kolkata"
 
 concurrency:
   group: evidyarthee-production
@@ -42,8 +39,6 @@ jobs:
       METRICOOL_USER_TOKEN: ${{ secrets.METRICOOL_USER_TOKEN }}
       METRICOOL_USER_ID: ${{ secrets.METRICOOL_USER_ID }}
       METRICOOL_BLOG_ID: ${{ secrets.METRICOOL_BLOG_ID }}
-      AI_API_KEY: ${{ secrets.AI_API_KEY }}
-      AI_MODEL: ${{ secrets.AI_MODEL }}
       EVIDYARTHEE_EMERGENCY_KILL_SWITCH: ${{ secrets.EVIDYARTHEE_EMERGENCY_KILL_SWITCH }}
 
     steps:
@@ -79,13 +74,11 @@ jobs:
         run: |
           if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
             echo "lane=$MANUAL_LANE" >> "$GITHUB_OUTPUT"
-          elif [ "$EVENT_NAME" = "push" ]; then
-            echo "lane=educational" >> "$GITHUB_OUTPUT"
-          elif [ "$EVENT_ACTION" = "15 3 * * 1-5" ]; then
+          elif [ "$EVENT_ACTION" = "40 8 * * 1-5" ]; then
             echo "lane=pre-market" >> "$GITHUB_OUTPUT"
-          elif [ "$EVENT_ACTION" = "0 8 * * 1-5" ]; then
+          elif [ "$EVENT_ACTION" = "25 13 * * 1-5" ]; then
             echo "lane=educational" >> "$GITHUB_OUTPUT"
-          elif [ "$EVENT_ACTION" = "0 11 * * 1-5" ]; then
+          elif [ "$EVENT_ACTION" = "25 16 * * 1-5" ]; then
             echo "lane=post-market" >> "$GITHUB_OUTPUT"
           else
             echo "lane=news" >> "$GITHUB_OUTPUT"
