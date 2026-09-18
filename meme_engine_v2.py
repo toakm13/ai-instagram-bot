@@ -63,7 +63,10 @@ def run():
     if not choice:return {'status':'no_new_meme'}
     cat,title,body,fp=choice; asset=ASSETS/f'{fp[:24]}.png'; render(title,body,asset)
     if asset.stat().st_size>8*1024*1024:return {'status':'blocked','reason':'Asset too large'}
-    media=commit(asset); when=datetime.now(TZ)+timedelta(minutes=2)
+    media=commit(asset)
+    now=datetime.now(TZ)
+    when=now.replace(hour=19,minute=30,second=0,microsecond=0)
+    if when <= now: when=now+timedelta(minutes=2)
     caption=f'😂 {title}\n\n{body}\n\nयह relatable finance content है — buy/sell recommendation नहीं.\n\n#Evidyarthee #FinanceMemes #IndianInvestors #PersonalFinance #FinancialEducation #StockMarket'
     result=publish(caption,media,when); s.setdefault('fingerprints',[]).append(fp); s.setdefault('runs',[]).append({'at':datetime.now(TZ).isoformat(),'category':cat,'title':title,'status':'queued' if result.get('ok') else 'failed','metricool':result}); save(s)
     return {'status':'queued' if result.get('ok') else 'failed','category':cat,'title':title,'metricool':result,'publish_at':when.isoformat()}
