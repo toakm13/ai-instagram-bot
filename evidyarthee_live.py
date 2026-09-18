@@ -111,7 +111,20 @@ def run(lane):
     if fp in state.get("fingerprints",[]) or asset.exists():return {"status":"duplicate","lane":lane}
     render(title,body,source,asset)
     if asset.stat().st_size>8*1024*1024:return {"status":"blocked","reason":"Asset too large"}
-    media=commit_asset(asset); when=datetime.now(TZ)+timedelta(minutes=2); caption=f"📌 {title}\n\n{body}\n\nयह educational market content है, buy/sell recommendation नहीं।\n\nSource: {source}\n#Evidyarthee #FinancialEducation #MarketUpdate"; result=publish(caption,media,when)
+    media=commit_asset(asset)
+    # Publish at the locked daily slot. The workflow starts shortly before the
+    # slot so Metricool can receive the exact target time. If GitHub starts late,
+    # fall back to immediate scheduling rather than scheduling in the past.
+    now=datetime.now(TZ)
+    targets={"pre-market":(8,45),"educational":(13,30),"post-market":(16,30)}
+    if lane in targets:
+        hh,mm=targets[lane]
+        when=now.replace(hour=hh,minute=mm,second=0,microsecond=0)
+        if when <= now:
+            when=now+timedelta(minutes=2)
+    else:
+        when=now+timedelta(minutes=2)
+    caption=f"📌 {title}\n\n{body}\n\nयह educational market content है, buy/sell recommendation नहीं।\n\nSource: {source}\n#Evidyarthee #FinancialEducation #MarketUpdate"; result=publish(caption,media,when)
     if result.get("ok"):
         state.setdefault("fingerprints",[]).append(fp); state.setdefault("runs",[]).append({"at":datetime.now(TZ).isoformat(),"lane":lane,"status":"queued","metricool":result}); persist_state(state)
     return {"status":"queued" if result.get("ok") else "failed","lane":lane,"metricool":result,"publish_at":when.isoformat()}
