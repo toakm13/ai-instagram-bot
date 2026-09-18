@@ -3,8 +3,9 @@ name: Evidyarthee Daily Meme Engine
 on:
   workflow_dispatch:
   schedule:
-    # Daily 7:30 PM IST = 14:00 UTC
-    - cron: "0 14 * * *"
+    # Start before the locked 7:30 PM IST publication slot.
+    - cron: "25 19 * * *"
+      timezone: "Asia/Kolkata"
 
 concurrency:
   group: evidyarthee-daily-meme
